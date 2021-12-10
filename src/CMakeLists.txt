@@ -41,7 +41,7 @@ set (Boost_USE_STATIC_LIBS ON)
 
 find_package (Boost 1.54.0 REQUIRED COMPONENTS chrono date_time program_options python regex system thread)
 find_package (Qt4 4.8.7 REQUIRED COMPONENTS QtGui QtNetwork QtWebKit)
-find_package (OpenCL REQUIRED)
+#find_package (OpenCL REQUIRED)
 find_package (Python2 2.6...<2.7 REQUIRED COMPONENTS Development.Module) # Rebuild Boost to depend on 2.7
 find_package (DAZStudioSDK REQUIRED)
 
