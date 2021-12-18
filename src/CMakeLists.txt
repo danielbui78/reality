@@ -39,14 +39,15 @@ add_compile_options ($<$<AND:$<PLATFORM_ID:Darwin>,$<COMPILE_LANGUAGE:CXX>>:-std
 # Find dependencies
 set (Boost_USE_STATIC_LIBS ON)
 
-find_package (Boost 1.54.0 REQUIRED COMPONENTS chrono date_time program_options python regex system thread)
+#find_package (Boost 1.54.0 REQUIRED COMPONENTS chrono date_time program_options python regex system thread)
+find_package (Boost 1.78.0 REQUIRED COMPONENTS chrono date_time program_options python310 regex system thread)
 find_package (Qt4 4.8.7 REQUIRED COMPONENTS QtGui QtNetwork QtWebKit)
 find_package (OpenCL REQUIRED)
 find_package (Python2 2.6...<2.7 REQUIRED COMPONENTS Development.Module) # Rebuild Boost to depend on 2.7
 find_package (DAZStudioSDK REQUIRED)
 
 if (DAZStudioSDK_TOOLKIT_INCOMPATIBLE)
-	message (SEND_ERROR)
+#	message (SEND_ERROR)
 endif()
 
 # Include dependencies to build
@@ -59,15 +60,30 @@ unset (CMAKE_POLICY_DEFAULT_CMP0100)
 target_compile_definitions (qjson PRIVATE QJSON_MAKEDLL)
 
 # ZeroMQ
-set (CMAKE_POLICY_DEFAULT_CMP0048 OLD)
-set (CMAKE_POLICY_DEFAULT_CMP0053 OLD)
-set (CMAKE_POLICY_DEFAULT_CMP0071 OLD)
-add_subdirectory (../libs/zeromq4 ${CMAKE_CURRENT_BINARY_DIR}/deps/zeromq4 EXCLUDE_FROM_ALL)
-unset (CMAKE_POLICY_DEFAULT_CMP0048)
-unset (CMAKE_POLICY_DEFAULT_CMP0053)
-unset (CMAKE_POLICY_DEFAULT_CMP0071)
-target_compile_definitions (libzmq-static PUBLIC ZMQ_STATIC)
-target_include_directories (libzmq-static INTERFACE ../libs/zeromq4/include)
+#set (CMAKE_POLICY_DEFAULT_CMP0048 OLD)
+#set (CMAKE_POLICY_DEFAULT_CMP0053 OLD)
+#set (CMAKE_POLICY_DEFAULT_CMP0071 OLD)
+#add_subdirectory (../libs/zeromq4 ${CMAKE_CURRENT_BINARY_DIR}/deps/zeromq4 EXCLUDE_FROM_ALL)
+#unset (CMAKE_POLICY_DEFAULT_CMP0048)
+#unset (CMAKE_POLICY_DEFAULT_CMP0053)
+#unset (CMAKE_POLICY_DEFAULT_CMP0071)
+#target_compile_definitions (libzmq-static PUBLIC ZMQ_STATIC)
+#target_include_directories (libzmq-static INTERFACE ../libs/zeromq4/include)
+## external ZMQ
+if (NOT ZMQ_DIR)
+	set(ZMQ_DIR "" CACHE PATH "Path to ZeroMQ folder")
+	message(FATAL_ERROR "Missing path to ZeroMQ folder")
+	return()
+endif()
+set(ZMQ_INCLUDE_DIR "${ZMQ_DIR}" CACHE PATH "Path to ZeroMQ include folder. Hint: path to zmq.h and zmq.hpp")
+if (WIN32)
+	set(ZMQ_LIB "${ZMQ_DIR}/libzmq-v142-mt-4_3_4.lib" CACHE PATH "Path to ZeroMQ lib file")
+	set(ZMQ_STATIC_LIB "${ZMQ_DIR}/libzmq-v142-mt-s-4_3_4.lib" CACHE PATH "Path to ZeroMQ lib file")
+elseif(APPLE)
+	set(ZMQ_LIB "${ZMQ_DIR}/libzmq-4_3_4.lib" CACHE PATH "Path to ZeroMQ lib file")
+	set(ZMQ_STATIC_LIB "${ZMQ_DIR}/libzmq-s-4_4_4.lib" CACHE PATH "Path to ZeroMQ lib file")
+endif()
+##
 
 # Enable Qt Auto MOC/UIC/RCC
 set (CMAKE_AUTOMOC ON)
@@ -81,14 +97,24 @@ set (CMAKE_AUTORCC ON)
 
 
 # Define file groups
-set (SRC_GROUP_SQLITE
-	../libs/sqlite/sqlite3.c
-	../libs/SQLiteCpp/src/Column.cpp
-	../libs/SQLiteCpp/src/Database.cpp
-	../libs/SQLiteCpp/src/Statement.cpp
-	../libs/SQLiteCpp/src/Transaction.cpp
-)
-source_group ("SQLite" FILES ${SRC_GROUP_SQLITE})
+#set (SRC_GROUP_SQLITE
+#	../libs/sqlite/sqlite3.c
+#	../libs/SQLiteCpp/src/Column.cpp
+#	../libs/SQLiteCpp/src/Database.cpp
+#	../libs/SQLiteCpp/src/Statement.cpp
+#	../libs/SQLiteCpp/src/Transaction.cpp
+#)
+#source_group ("SQLite" FILES ${SRC_GROUP_SQLITE})
+## external SQLITECPP
+if (NOT SQLITECPP_DIR)
+	set(SQLITECPP_DIR "" CACHE PATH "Path to SQLiteCpp folder")
+	message(FATAL_ERROR "Missing path to SQLiteCpp folder")
+	return()
+endif()
+set(SQLITECPP_INCLUDE_DIR "${SQLITECPP_DIR}/include" CACHE PATH "Path to SQLiteCpp include folder. Hint: path to zmq.h and zmq.hpp")
+set(SQLITE3_LIB "${SQLITECPP_DIR}/libs/sqlite3.lib" CACHE PATH "Path to SQLiteCpp lib file")
+set(SQLITECPP_LIB "${SQLITECPP_DIR}/libs/SQLiteCpp.lib" CACHE PATH "Path to sqlite3 lib file")
+##
 
 set (SRC_GROUP_QT_UI
 	gui/uiFiles/imageMapManager.ui
@@ -585,7 +611,11 @@ target_compile_definitions (Reality_Widgets PRIVATE RE_LIB_MAKE_SHARED QJSON_MAK
 target_include_directories (Reality_Widgets PRIVATE core data gui gui/RealityPanel gui/RealityUI gui/RealityUI/MaterialEditors)
 target_include_directories (Reality_Widgets PRIVATE ../libs ../libs/sqlite ../libs/SQLiteCpp/include)
 target_link_libraries (Reality_Widgets PRIVATE Boost::date_time Boost::regex Boost::system Boost::thread OpenCL::OpenCL Qt4::QtGui)
-target_link_libraries (Reality_Widgets PRIVATE libzmq-static qjson)
+target_link_libraries (Reality_Widgets PRIVATE qjson)
+## external libs
+target_include_directories (Reality_Widgets PRIVATE ${ZMQ_INCLUDE_DIR} ${SQLITECPP_INCLUDE_DIR})
+target_link_libraries (Reality_Widgets PRIVATE ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
+##
 set_target_properties (Reality_Widgets PROPERTIES AUTOUIC_SEARCH_PATHS gui/uiFiles)
 
 target_sources (Reality_Widgets PRIVATE
@@ -610,8 +640,12 @@ target_compile_definitions (Reality_LIB PRIVATE RE_LIB_MAKE_SHARED QJSON_MAKEDLL
 target_include_directories (Reality_LIB PUBLIC core data)
 target_include_directories (Reality_LIB PUBLIC ../libs ../libs/sqlite ../libs/SQLiteCpp/include)
 target_link_libraries (Reality_LIB PUBLIC Boost::date_time Boost::regex Boost::system Boost::thread OpenCL::OpenCL Qt4::QtGui)
-target_link_libraries (Reality_LIB PUBLIC libzmq-static qjson)
 
+target_link_libraries (Reality_LIB PUBLIC qjson)
+## external libs
+target_include_directories (Reality_LIB PRIVATE ${ZMQ_INCLUDE_DIR} ${SQLITECPP_INCLUDE_DIR})
+target_link_libraries (Reality_LIB PRIVATE ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
+##
 target_sources (Reality_LIB PRIVATE
 	${SRC_GROUP_SQLITE}
 	${SRC_GROUP_RESOURCES}
@@ -627,7 +661,11 @@ target_compile_definitions (Reality_DS PRIVATE RE_LIB_MAKE_SHARED SQLITECPP_ENAB
 target_include_directories (Reality_DS PRIVATE core data)
 target_include_directories (Reality_DS PRIVATE ../libs ../libs/sqlite ../libs/SQLiteCpp/include)
 target_link_libraries (Reality_DS PRIVATE Boost::date_time Boost::chrono Boost::regex Boost::thread OpenCL::OpenCL DAZStudioSDK::DAZStudioSDK)
-target_link_libraries (Reality_DS PRIVATE libzmq-static qjson)
+target_link_libraries (Reality_DS PRIVATE qjson)
+## external libs
+target_include_directories (Reality_DS PRIVATE ${ZMQ_INCLUDE_DIR} ${SQLITECPP_INCLUDE_DIR})
+target_link_libraries (Reality_DS PRIVATE ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
+##
 set_target_properties (Reality_DS PROPERTIES XCODE_ATTRIBUTE_EXPORTED_SYMBOLS_FILE "${TESTFIXTURES_DIR}/exported-symbols.txt")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -656,7 +694,11 @@ target_compile_definitions (Reality_PY PRIVATE BOOST_PYTHON_STATIC_LIB RE_LIB_MA
 target_include_directories (Reality_PY PRIVATE core data)
 target_include_directories (Reality_PY PRIVATE ../libs ../libs/sqlite ../libs/SQLiteCpp/include)
 target_link_libraries (Reality_PY PRIVATE Boost::date_time Boost::python Boost::regex Boost::system Boost::thread OpenCL::OpenCL)
-target_link_libraries (Reality_PY PRIVATE libzmq-static qjson)
+target_link_libraries (Reality_PY PRIVATE qjson)
+## external ZMQ
+target_include_directories (Reality_PY PRIVATE ${ZMQ_INCLUDE_DIR} ${SQLITECPP_INCLUDE_DIR})
+target_link_libraries (Reality_PY PRIVATE ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
+##
 #set_target_properties (Reality_PY PROPERTIES OUTPUT_NAME Reality)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -682,6 +724,7 @@ add_executable (Reality_Executable WIN32) #MACOSX_BUNDLE
 target_include_directories (Reality_Executable PRIVATE gui gui/actions gui/RealityPanel gui/RealityUI gui/RealityUI/MaterialEditors)
 target_link_libraries (Reality_Executable PRIVATE Boost::program_options Qt4::QtWebKit)
 target_link_libraries (Reality_Executable PRIVATE Reality_LIB)
+target_include_directories (Reality_Executable PRIVATE ${ZMQ_INCLUDE_DIR} ${SQLITECPP_INCLUDE_DIR})
 set_target_properties (Reality_Executable PROPERTIES AUTOUIC_SEARCH_PATHS gui/uiFiles)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
