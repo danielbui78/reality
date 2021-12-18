@@ -12,7 +12,6 @@
       "displayName": "Windows Default",
       "description": "Target Windows with the Visual Studio development environment.",
       "generator": "Visual Studio 17 2022",
-      "toolset": "Windows7.1SDK",
       "binaryDir": "${sourceDir}/../build/${presetName}",
       "cacheVariables": {
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/../install/${presetName}"
@@ -39,7 +38,7 @@
       "displayName": "RelWithDebInfo",
       "description": "Build Type Release with Debug Information.",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
