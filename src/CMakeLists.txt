@@ -693,7 +693,7 @@ Python2_add_library (Reality_PY MODULE)
 target_compile_definitions (Reality_PY PRIVATE BOOST_PYTHON_STATIC_LIB RE_LIB_MAKE_SHARED $<$<PLATFORM_ID:Windows>:WIN32_LEAN_AND_MEAN _CRT_SECURE_NO_WARNINGS QJSON_MAKEDLL>)
 target_include_directories (Reality_PY PRIVATE core data)
 target_include_directories (Reality_PY PRIVATE ../libs ../libs/sqlite ../libs/SQLiteCpp/include)
-target_link_libraries (Reality_PY PRIVATE Boost::date_time Boost::python Boost::regex Boost::system Boost::thread OpenCL::OpenCL)
+target_link_libraries (Reality_PY PRIVATE Boost::date_time Boost::python310 Boost::regex Boost::system Boost::thread OpenCL::OpenCL)
 target_link_libraries (Reality_PY PRIVATE qjson)
 ## external ZMQ
 target_include_directories (Reality_PY PRIVATE ${ZMQ_INCLUDE_DIR} ${SQLITECPP_INCLUDE_DIR})
