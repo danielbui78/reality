@@ -495,7 +495,7 @@ void ReLuxSceneExporter::exportScene( const int frameNo, boost::any& sceneData )
       }
       catch(...) {
         RE_LOG_WARN() << "Error: cast operation invalid for material " 
-                      << mat->getName().toStdString();
+                      << new std::string( mat->getName().toLocal8Bit() );
       }
       materials += mats + "\n";
     }

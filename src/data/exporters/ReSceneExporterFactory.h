@@ -74,7 +74,7 @@ public:
 
   void registerExporter( const QString& exporterID, ReSceneExporterCreator creator ) {
     if (creator) {
-      RE_LOG_INFO() << "Registered exporter for format " << exporterID.toStdString();
+      RE_LOG_INFO() << "Registered exporter for format " << new std::string( exporterID.toLocal8Bit() );
       exporterCreators[exporterID] = creator;
     }
   };

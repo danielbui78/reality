@@ -190,7 +190,7 @@ ReLuxRunner::runLuxConsole( const QString& processInput,
 
   luxProc.start(cmd,args);
   if ( !luxProc.waitForStarted(2000) ) {
-    RE_LOG_DEBUG() << "Timeout in starting luxconsole " << cmd.toStdString();
+    RE_LOG_DEBUG() << "Timeout in starting luxconsole " << new std::string(cmd.toLocal8Bit() );
     return ReLuxRunner::retCode = LR_COULD_NOT_START;
   }
   if (!processInput.isEmpty()) {
@@ -227,7 +227,7 @@ ReLuxRunner::ExecutionResult ReLuxRunner::renderViaConsole(
   args << sceneFileName;
   luxProc.start(cmd,args);
   if ( !luxProc.waitForStarted(2000) ) {
-    RE_LOG_DEBUG() << "Timeout in starting luxconsole " << cmd.toStdString();
+    RE_LOG_DEBUG() << "Timeout in starting luxconsole " << new std::string(cmd.toLocal8Bit() );
     return ReLuxRunner::retCode = LR_COULD_NOT_START;
   }
   if (waitForCompletion) {
@@ -296,15 +296,15 @@ void ReLuxRunner::processSLGstdout() {
 
 ReLuxRunner::ExecutionResult ReLuxRunner::runSLG( const QString sceneFileName ) {
   QString slgProgramPath = RealityBase::getRealityBase()->getRendererPath(SLG);
-  RE_LOG_INFO() << "SLG cmd line: " << slgProgramPath.toStdString();
+  RE_LOG_INFO() << "SLG cmd line: " << new std::string(slgProgramPath.toLocal8Bit() );
   QFileInfo slgPathInfo(slgProgramPath);
   if (!slgPathInfo.exists()) {
     return ReLuxRunner::retCode = LR_SLG_NOT_FOUND;
   }
 
   QFileInfo sceneInfo(sceneFileName);
-  RE_LOG_INFO() << "Working dir for SLG:" << sceneInfo.path().toStdString() 
-                << " -- scene file: " << sceneInfo.fileName().toStdString();
+  RE_LOG_INFO() << "Working dir for SLG:" << new std::string( sceneInfo.path().toLocal8Bit() ) 
+                << " -- scene file: " << new std::string( sceneInfo.fileName().toLocal8Bit() );
   QStringList args;
   args << sceneInfo.fileName();
   // Connect to the process

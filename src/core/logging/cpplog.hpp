@@ -1194,7 +1194,8 @@ namespace cpplog
 
 //! This overloaded operator provides support for using QString with the logger
 inline std::ostream& operator <<( std::ostream& stream, const QString& qstr ) {
-  stream << qstr.toStdString();
+//  stream << qstr.toStdString();
+    stream << new std::string(qstr.toLocal8Bit());
   return stream;
 }
 

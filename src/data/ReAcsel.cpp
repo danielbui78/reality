@@ -90,7 +90,7 @@ QString ReAcsel::getAcselID( const QString geometryFileName,
   // Find the object alias, if present
   QString qry = QString("SELECT * from %1 WHERE ObjectID=?")
                   .arg(RE_ACSEL_TABLE_ALIASES);
-  SQLite::Statement s( *db, qry.toStdString() );
+  SQLite::Statement s( *db, (const char*) qry.toLocal8Bit() );
   s.bind(1, static_cast<const char*>(geometryFileName.toUtf8()));  
   if (s.executeStep()) {
     objectID = s.getColumn(1).getText();
@@ -133,7 +133,7 @@ bool ReAcsel::getOriginalShader( const QString objID,
                 " MatID=?"
               )
               .arg(RE_ACSEL_TABLE_ORIGINAL_SHADERS);
-  SQLite::Statement s( *db, q.toStdString() );
+  SQLite::Statement s( *db, (const char*) q.toLocal8Bit() );
   s.bind(1, static_cast<const char*>(getAppCode().toUtf8()));
   s.bind(2, static_cast<const char*>(objID.toUtf8()));
   s.bind(3, static_cast<const char*>(matID.toUtf8()));
@@ -186,7 +186,7 @@ bool ReAcsel::runQuery( const QString& sql ) {
     if (!db) {
       return false;
     }
-    SQLite::Statement q(*db, sql.toStdString() );
+    SQLite::Statement q(*db, (const char*) sql.toLocal8Bit() );
     try {
       q.exec();
     }
@@ -196,7 +196,7 @@ bool ReAcsel::runQuery( const QString& sql ) {
                      )
                      .arg(q.getErrorMsg())
                      .arg(sql);
-      RE_LOG_INFO() << lastErrorMsg.toStdString();
+      RE_LOG_INFO() << new std::string( lastErrorMsg.toLocal8Bit() );
       return false;
     }
   }
@@ -211,9 +211,9 @@ bool ReAcsel::createTableIfMissing( const QString& tableName,
                                     const QString& postCommands ) {
 
   if (!db->tableExists(tableName.toAscii())) {
-    RE_LOG_INFO() << QString("Table %1 does not exist").arg(tableName).toStdString();
+    RE_LOG_INFO() << new std::string( QString("Table %1 does not exist").arg(tableName).toLocal8Bit() );
     if ( runQuery( sql ) ) {
-      RE_LOG_INFO() << QString("Table %1 created").arg(tableName).toStdString();
+      RE_LOG_INFO() << new std::string( QString("Table %1 created").arg(tableName).toLocal8Bit() );
       if (!postCommands.isEmpty()) {
         // The \n is used to separate multiple commands in the string
         // because SQLite doesn't support multiple commands at the moment
@@ -254,7 +254,7 @@ void ReAcsel::initDB() {
     }
     catch( SQLite::Exception ) {
       lastErrorMsg = "Could not connect or open the ACSEL database";
-      RE_LOG_INFO() << lastErrorMsg.toStdString();
+      RE_LOG_INFO() << new std::string( lastErrorMsg.toLocal8Bit() );
       return;
     }
     dbOpen = true;
@@ -447,8 +447,8 @@ void ReAcsel::checkDatabaseVersion() {
     return;
   }
 
-  SQLite::Statement q( *db, QString("SELECT * from %1")
-                             .arg(RE_ACSEL_TABLE_VERSION_INFO).toStdString() );
+  SQLite::Statement q( *db, (const char*) QString("SELECT * from %1")
+                             .arg(RE_ACSEL_TABLE_VERSION_INFO).toLocal8Bit() );
   if (q.executeStep()) {
     float currentVer = RE_ACSEL_VERSION_MAJOR + RE_ACSEL_VERSION_MINOR/10.0;
     float dbVer = q.getColumn(0).getInt() + (q.getColumn(1).getInt() / 10.0);
@@ -518,7 +518,7 @@ void ReAcsel::updateDatabase( const float dbVer, const float libVer ) {
       }
       // Upgrade the Presets table to have the Flags colum
       s.reset();
-      SQLite::Statement us(*db,QString("ALTER TABLE Sets ADD 'Flags' SMALLINT DEFAULT 0").toStdString());
+      SQLite::Statement us(*db, (const char*) QString("ALTER TABLE Sets ADD 'Flags' SMALLINT DEFAULT 0").toLocal8Bit() );
       if ( us.exec() ) {
         // Now search if the customer has bought the commercial sets that were
         // delivered before the flags field was implemented and if so, set 
@@ -589,7 +589,7 @@ bool ReAcsel::saveShader( const QString& ID,
                   )
                   .arg(RE_ACSEL_TABLE_SHADERS);
 
-    SQLite::Statement q( *db, qry.toStdString() );
+    SQLite::Statement q( *db, (const char*) qry.toLocal8Bit() );
     q.bind(":id", static_cast<const char*>(ID.toAscii()));
     q.bind(":shaderCode", static_cast<const char*>(shaderCode.toUtf8()));
     q.bind(":matType", static_cast<const char*>(lutMaterialTypes[matType].toAscii()));
@@ -599,13 +599,13 @@ bool ReAcsel::saveShader( const QString& ID,
     success = q.exec();
     // Move the UUID schema from the temp table to the permanent one
     if (success) {
-      SQLite::Statement q( *db, 
+      SQLite::Statement q( *db, (const char*)
                            QString(
                              "SELECT Schema from %1 WHERE APP='%2' AND UUID='%3'"
                            )
                            .arg(RE_ACSEL_TABLE_TEMP_UUIDS)
                            .arg(getAppCode())
-                           .arg(ID).toStdString()
+                           .arg(ID).toLocal8Bit()
                          );
       if (!q.executeStep()) {
         success = false;
@@ -644,16 +644,16 @@ bool ReAcsel::deleteShader( const QString& shaderID ) {
     AcselTransactionPtr t = startTransaction();
     QString qry = QString("DELETE FROM %1 WHERE UUID=:shaderID")
                     .arg(RE_ACSEL_TABLE_SHADERS);
-    SQLite::Statement s(*db, qry.toStdString());
-    s.bind(":shaderID", shaderID.toStdString());
+    SQLite::Statement s(*db, (const char*) qry.toLocal8Bit());
+    s.bind(":shaderID", (const char*) shaderID.toLocal8Bit());
     success = s.exec();
     if (!success) {
       return success;
     }
     qry = QString("DELETE FROM %1 WHERE UUID=:shaderID")
             .arg(RE_ACSEL_TABLE_UUIDS);
-    SQLite::Statement s2(*db, qry.toStdString());
-    s2.bind(":shaderID", shaderID.toStdString());
+    SQLite::Statement s2(*db, (const char*) qry.toLocal8Bit());
+    s2.bind(":shaderID", (const char*) shaderID.toLocal8Bit());
     success = s2.exec();
     if (!success) {
       return success;
@@ -701,8 +701,8 @@ int ReAcsel::getVolumeID( const QString& setID,
                  )
                  .arg(RE_ACSEL_TABLE_SHADERS)
                  .arg(matList);
-    SQLite::Statement q( *db, qry.toStdString());
-    q.bind(":setID", setID.toStdString());
+    SQLite::Statement q( *db, (const char*) qry.toLocal8Bit());
+    q.bind(":setID", (const char*) setID.toLocal8Bit());
 
     if (!q.executeStep()) {
       return 0;
@@ -724,8 +724,8 @@ int ReAcsel::saveVolume( const int volumeID,
     if (volumeID == 0) {
       QString qry = QString("SELECT MAX(VolumeID) FROM %1 WHERE SetID=:setID")
                       .arg(RE_ACSEL_TABLE_VOLUMES);
-      SQLite::Statement q(*db, qry.toStdString());
-      q.bind(":setID", setID.toStdString());
+      SQLite::Statement q(*db, (const char*) qry.toLocal8Bit());
+      q.bind(":setID", (const char*) setID.toLocal8Bit());
       if (!q.executeStep()) {
         return 0;
       }
@@ -734,7 +734,7 @@ int ReAcsel::saveVolume( const int volumeID,
                     " values(:setID, :volumeID, :volumeCode)")
               .arg(RE_ACSEL_TABLE_VOLUMES);
 
-      SQLite::Statement iq(*db, qry.toStdString());
+      SQLite::Statement iq(*db, (const char*) qry.toLocal8Bit());
       iq.bind(":setID", static_cast<const char*>(setID.toAscii()));
       iq.bind(":volumeID", newID);
       iq.bind(":volumeCode", static_cast<const char*>(volumeCode.toUtf8()));
@@ -755,7 +755,7 @@ int ReAcsel::saveVolume( const int volumeID,
                     " VALUES(?,?,?)"
                   )
                   .arg(RE_ACSEL_TABLE_VOLUMES);
-    SQLite::Statement us( *db , qry.toStdString() );
+    SQLite::Statement us( *db , (const char*) qry.toLocal8Bit() );
     us.bind(1, static_cast<const char*>(setID.toAscii()));
     us.bind(2, volumeID);
     us.bind(3, static_cast<const char *>(volumeCode.toUtf8()));
@@ -778,10 +778,10 @@ bool ReAcsel::findVolume( const QString& setID, const int volID, QString& volCod
   volCode = "";
   SQLite::Statement q( 
     *db, 
-    QString("SELECT VolumeCode FROM %1 WHERE SetId=? AND VolumeID=?")
-      .arg(RE_ACSEL_TABLE_VOLUMES).toStdString()
+    (const char*) QString("SELECT VolumeCode FROM %1 WHERE SetId=? AND VolumeID=?")
+      .arg(RE_ACSEL_TABLE_VOLUMES).toLocal8Bit()
   );
-  q.bind(1, setID.toStdString());
+  q.bind(1, (const char*) setID.toLocal8Bit());
   q.bind(2, volID);
   if ( !q.executeStep() ) {
     return false;
@@ -1080,10 +1080,10 @@ void ReAcsel::eraseTempData() {
     return;
   }
   QString appCode = getAppCode();
-  SQLite::Statement q(*db, 
+  SQLite::Statement q(*db, (const char*)
                       QString("SELECT count(UUID) from %1 WHERE APP='%2'")
                         .arg(RE_ACSEL_TABLE_TEMP_UUIDS)
-                        .arg(getAppCode()).toStdString());
+                        .arg(getAppCode()).toLocal8Bit() );
   try {
     if ( q.executeStep() ) {
       int numRows = q.getColumn(0);
