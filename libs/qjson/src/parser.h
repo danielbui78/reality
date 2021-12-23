@@ -42,7 +42,7 @@ namespace QJson {
   {
     public:
       Parser();
-      ~Parser();
+//      ~Parser();
 
       /**
       * Read JSON string from the I/O Device and converts it to a QVariant object

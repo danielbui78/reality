@@ -39,7 +39,7 @@ namespace QJson {
   {
     public:
       ParserPrivate();
-      ~ParserPrivate();
+//      ~ParserPrivate();
 
       void setError(QString errorMsg, int line);
 
