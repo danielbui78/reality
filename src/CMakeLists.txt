@@ -41,9 +41,10 @@ set (Boost_USE_STATIC_LIBS ON)
 
 #find_package (Boost 1.54.0 REQUIRED COMPONENTS chrono date_time program_options python regex system thread)
 find_package (Boost 1.78.0 REQUIRED COMPONENTS chrono date_time program_options python310 regex system thread)
-find_package (Qt4 4.8.7 REQUIRED COMPONENTS QtGui QtNetwork QtWebKit)
+find_package (Qt4 4.8.1 REQUIRED COMPONENTS QtGui QtNetwork QtWebKit)
 find_package (OpenCL REQUIRED)
-find_package (Python2 2.6...<2.7 REQUIRED COMPONENTS Development.Module) # Rebuild Boost to depend on 2.7
+#find_package (Python2 2.6...<2.7 REQUIRED COMPONENTS Development.Module) # Rebuild Boost to depend on 2.7
+find_package (Python3 REQUIRED COMPONENTS Interpreter Development)
 find_package (DAZStudioSDK REQUIRED)
 
 if (DAZStudioSDK_TOOLKIT_INCOMPATIBLE)
@@ -178,7 +179,7 @@ set (SRC_GROUP_QT_UI
 )
 source_group ("QT Designer UI" FILES ${SRC_GROUP_QT_UI})
 
-# We need to have separate groups of sources for the texture and material 
+# We need to have separate groups of sources for the texture and material
 # editors because they need to be included in the RealityWidgets library,
 # the plugin library for Qt Creator, while the rest of the gui must not be
 # incuded there.
@@ -614,7 +615,7 @@ target_link_libraries (Reality_Widgets PRIVATE Boost::date_time Boost::regex Boo
 target_link_libraries (Reality_Widgets PRIVATE qjson)
 ## external libs
 target_include_directories (Reality_Widgets PRIVATE ${ZMQ_INCLUDE_DIR} ${SQLITECPP_INCLUDE_DIR})
-target_link_libraries (Reality_Widgets PRIVATE ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
+target_link_libraries (Reality_Widgets PRIVATE ${ZMQ_LIB} ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
 ##
 set_target_properties (Reality_Widgets PROPERTIES AUTOUIC_SEARCH_PATHS gui/uiFiles)
 
@@ -644,7 +645,7 @@ target_link_libraries (Reality_LIB PUBLIC Boost::date_time Boost::regex Boost::s
 target_link_libraries (Reality_LIB PUBLIC qjson)
 ## external libs
 target_include_directories (Reality_LIB PRIVATE ${ZMQ_INCLUDE_DIR} ${SQLITECPP_INCLUDE_DIR})
-target_link_libraries (Reality_LIB PRIVATE ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
+target_link_libraries (Reality_LIB PRIVATE ${ZMQ_LIB} ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
 ##
 target_sources (Reality_LIB PRIVATE
 	${SRC_GROUP_SQLITE}
@@ -664,7 +665,7 @@ target_link_libraries (Reality_DS PRIVATE Boost::date_time Boost::chrono Boost::
 target_link_libraries (Reality_DS PRIVATE qjson)
 ## external libs
 target_include_directories (Reality_DS PRIVATE ${ZMQ_INCLUDE_DIR} ${SQLITECPP_INCLUDE_DIR})
-target_link_libraries (Reality_DS PRIVATE ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
+target_link_libraries (Reality_DS PRIVATE ${ZMQ_LIB} ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
 ##
 set_target_properties (Reality_DS PROPERTIES XCODE_ATTRIBUTE_EXPORTED_SYMBOLS_FILE "${TESTFIXTURES_DIR}/exported-symbols.txt")
 
@@ -689,7 +690,7 @@ target_sources (Reality_DS PRIVATE
 )
 
 # Configure Poser Addon
-Python2_add_library (Reality_PY MODULE)
+PYTHON3_ADD_LIBRARY (Reality_PY MODULE)
 target_compile_definitions (Reality_PY PRIVATE BOOST_PYTHON_STATIC_LIB RE_LIB_MAKE_SHARED $<$<PLATFORM_ID:Windows>:WIN32_LEAN_AND_MEAN _CRT_SECURE_NO_WARNINGS QJSON_MAKEDLL>)
 target_include_directories (Reality_PY PRIVATE core data)
 target_include_directories (Reality_PY PRIVATE ../libs ../libs/sqlite ../libs/SQLiteCpp/include)
@@ -697,7 +698,7 @@ target_link_libraries (Reality_PY PRIVATE Boost::date_time Boost::python310 Boos
 target_link_libraries (Reality_PY PRIVATE qjson)
 ## external ZMQ
 target_include_directories (Reality_PY PRIVATE ${ZMQ_INCLUDE_DIR} ${SQLITECPP_INCLUDE_DIR})
-target_link_libraries (Reality_PY PRIVATE ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
+target_link_libraries (Reality_PY PRIVATE ${ZMQ_LIB} ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
 ##
 #set_target_properties (Reality_PY PROPERTIES OUTPUT_NAME Reality)
 
@@ -725,6 +726,7 @@ target_include_directories (Reality_Executable PRIVATE gui gui/actions gui/Reali
 target_link_libraries (Reality_Executable PRIVATE Boost::program_options Qt4::QtWebKit)
 target_link_libraries (Reality_Executable PRIVATE Reality_LIB)
 target_include_directories (Reality_Executable PRIVATE ${ZMQ_INCLUDE_DIR} ${SQLITECPP_INCLUDE_DIR})
+target_link_libraries (Reality_Executable PRIVATE ${ZMQ_LIB} ${ZMQ_STATIC_LIB} ${SQLITE3_LIB} ${SQLITECPP_LIB})
 set_target_properties (Reality_Executable PROPERTIES AUTOUIC_SEARCH_PATHS gui/uiFiles)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
