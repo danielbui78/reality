@@ -33,8 +33,9 @@ RE_LIB_ACCESS extern cpplog::OstreamLogger RealityLogger;
 #define RE_LOG_DEBUG() LOG_DEBUG(RealityLogger)
 
 // Used to print a QString using the std::stream 
-#define QSS(str) str.toStdString()
-#define QVS(var) var.toString().toStdString()
+//#define QSS(str) str.toStdString()
+#define QSS(str) new std::string(str.toLocal8Bit())
+#define QVS(var) new std::string(var.toString().toLocal8Bit())
 
 /**
  * This class implements a custom format for the log
@@ -81,7 +82,7 @@ protected:
                       << m_logData->fileName << ":"
                       << m_logData->line
 #endif                      
-                      << (prefix.isEmpty() ? "" : QString("(%1)").arg(prefix).toStdString())
+                      << (prefix.isEmpty() ? "" : (const char*) QString("(%1)").arg(prefix).toLocal8Bit() )
                       << shortLogLevelName(m_logData->level)
                       << " ";
   }
