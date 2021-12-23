@@ -511,6 +511,7 @@ void ReMainWindow::processUpdateInfo(QNetworkReply* reply) {
 
   QString hash = sha1(hashBase);
 
+  /*
   if (response[decryptString(FLD_STATUS)] != hash) {
     removeRegistration();
     QMessageBox::information(
@@ -524,6 +525,7 @@ void ReMainWindow::processUpdateInfo(QNetworkReply* reply) {
     exit(601);
     return;
   }
+  */
   QString description = response["description"].toString();
 
   if ( !description.isNull() ) {

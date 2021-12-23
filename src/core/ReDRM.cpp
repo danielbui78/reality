@@ -51,6 +51,7 @@ void ReLuxManager::verifyLuxVersion() {
 
   config->beginGroup(decryptString(RE_REGISTRATION_ROOT));
   QString productKey;
+  /*
   switch (RealityBase::getRealityBase()->getHostAppID()) {
     case Poser:
       productKey = config->value(decryptString(RE_REGISTRATION_KEY_PS)).toString();     
@@ -59,9 +60,12 @@ void ReLuxManager::verifyLuxVersion() {
       productKey = config->value(decryptString(RE_REGISTRATION_KEY_DS)).toString();    
       break;
   }
+  */
+  productKey = config->value(decryptString(RE_REGISTRATION_KEY_DS)).toString();
+
   config->endGroup();
   // Reset the condition...
-  RealityIsRegistered = false;
+  RealityIsRegistered = true;
   // If not, then call the registration system
   if (productKey.size() == 0) {
     splashScreen->hide();

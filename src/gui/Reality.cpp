@@ -298,7 +298,10 @@ int main(int argc, char **argv) {
     showUsage(enabledOptions);
   }
   RealityBase::getRealityBase()->setHostAppID(appID);
-  
+
+  RealityIsRegistered = true;
+
+  /*
   // DRM STARTS HERE
   ReLuxManager registrationManager(&splash);
 
@@ -314,6 +317,7 @@ int main(int argc, char **argv) {
   if (!RealityIsRegistered) {
     return 0;
   }
+  */
 
   RealityMainWindow = new ReMainWindow(appID, ipAddress, hostVersion);
   splash.hide();
