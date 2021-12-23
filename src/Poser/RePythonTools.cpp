@@ -25,16 +25,17 @@ void convertPythonList( const T& tup, QVariantList& list ) {
     python::object oValue = tup[i];
     PyObject* valuePtr = oValue.ptr();
 
-    if (PyString_Check(valuePtr) || PyUnicode_Check(valuePtr)) {
-      // val = QVariant( extract<QString>(str(oValue)) );
+//    if (PyString_Check(valuePtr) || PyUnicode_Check(valuePtr)) {
+    if (PyUnicode_Check(valuePtr)) {
+            // val = QVariant( extract<QString>(str(oValue)) );
       val = QVariant( getQString(oValue) );
     }
     else if (PyFloat_Check(valuePtr)) {
       val = QVariant( extract<float>(oValue) );
     }
-    else if (PyInt_Check(valuePtr)) {
-      val = QVariant( extract<int>(oValue) );
-    }
+//    else if (PyInt_Check(valuePtr)) {
+//      val = QVariant( extract<int>(oValue) );
+//    }
     else if (PyLong_Check(valuePtr)) {
       qlonglong v = extract<long>(oValue);
       val = QVariant(v);
@@ -80,16 +81,17 @@ void convertPythonDict( const python::dict& dict, QVariantMap& map ) {
       QString key = getQString(oKey);
       QVariant value;
       PyObject* valuePtr = oValue.ptr();
-      if (PyString_Check(valuePtr) || PyUnicode_Check(valuePtr)) {
+//      if (PyString_Check(valuePtr) || PyUnicode_Check(valuePtr)) {
+      if (PyUnicode_Check(valuePtr)) {
         // value = QVariant( extract<QString>(str(oValue)) );
         value = QVariant( getQString(oValue) );
       }
       else if (PyFloat_Check(valuePtr)) {
         value = QVariant( extract<float>(oValue) );
       }
-      else if (PyInt_Check(valuePtr)) {
-        value = QVariant( extract<int>(oValue) );
-      }
+//      else if (PyInt_Check(valuePtr)) {
+//        value = QVariant( extract<int>(oValue) );
+//      }
       else if (PyLong_Check(valuePtr)) {
         value = QVariant( static_cast<qlonglong>(extract<long>(oValue)) );
       }
