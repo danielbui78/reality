@@ -109,7 +109,8 @@ void ReCameraEditor::loadCameraData() {
     cameraList->addTopLevelItem(item);
   }
   frfList->setEnabled(RealitySceneData->getNumCameras() > 0);
-  cameraChanged(RealitySceneData->getSelectedCameraID());
+  // DB 12/25/2021 -- had to comment line below due to crashes when updating scene
+  //cameraChanged(RealitySceneData->getSelectedCameraID());
   updatingUI = false;
 }
 
@@ -255,7 +256,8 @@ void ReCameraEditor::updateCameraSelected() {
   // Show the data
   gbExposure->setChecked(currentCamera->isExposureEnabled());
   showFocalDistance();
-  showCameraProperties();
+  // DB 12/25/2021 -- had to comment line below due to crashes when updating scene
+  //showCameraProperties();
   emit cameraSelected(cameraID);
   updatingUI = false;
 }

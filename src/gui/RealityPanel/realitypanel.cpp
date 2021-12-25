@@ -1760,7 +1760,9 @@ void RealityPanel::selectFirstItem() {
 void RealityPanel::checkObjectSelection( const QItemSelection& selected, 
                                          const QItemSelection& deselected) 
 {
-  int selectedItems = tvMaterials->selectionModel()->selectedRows().count();
+  // DB 12/25/2021 -- had to comment line below due to crashes when updating scene
+  //int selectedItems = tvMaterials->selectionModel()->selectedRows().count();
+  int selectedItems = 0;
   // If there are no items selected as the result of the user's action
   // then we select the first item in the list, which is the object's
   // record of the first object
