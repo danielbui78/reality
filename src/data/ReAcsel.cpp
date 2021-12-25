@@ -816,8 +816,8 @@ bool ReAcsel::saveShaderSet( QString& setID,
     // This test covers the case when we import a set from a bundle
     qry = QString("SELECT SetID from %1 WHERE SetID=:id")
             .arg(RE_ACSEL_TABLE_SETS); 
-    SQLite::Statement s( *db, qry.toStdString() );
-    s.bind(":id", setID.toStdString());
+    SQLite::Statement s( *db, (const char*) qry.toLocal8Bit() );
+    s.bind(":id", (const char*) setID.toLocal8Bit());
     isNew = !s.executeStep();
   }
 
@@ -829,7 +829,7 @@ bool ReAcsel::saveShaderSet( QString& setID,
                     " VALUES(:id, :setName, :desc, :author, :objID,"
                     " :isDefault, 1, 0, :isEnabled)")
               .arg(RE_ACSEL_TABLE_SETS);
-      SQLite::Statement s( *db, qry.toStdString());
+      SQLite::Statement s( *db, (const char*) qry.toLocal8Bit());
       s.bind(":id", static_cast<const char*>(setID.toAscii()));
       s.bind(":setName", static_cast<const char*>(name.toUtf8()));
       s.bind(":desc", static_cast<const char*>(description.toUtf8()));
@@ -843,7 +843,7 @@ bool ReAcsel::saveShaderSet( QString& setID,
       qry = QString("UPDATE %1 set SetName=:setName, Description=:desc"
                     " WHERE SetID=:setID")
               .arg(RE_ACSEL_TABLE_SETS);
-      SQLite::Statement s( *db, qry.toStdString());
+      SQLite::Statement s( *db, (const char*) qry.toLocal8Bit());
       s.bind(":setID", static_cast<const char*>(setID.toAscii()));
       s.bind(":setName", static_cast<const char*>(name.toUtf8()));
       s.bind(":desc", static_cast<const char*>(description.toUtf8()));
@@ -878,7 +878,7 @@ void ReAcsel::updateSetProperties( const QString& setID, const QVariantMap& data
                   .arg(RE_ACSEL_TABLE_SETS)
                   .arg(subQry.join(","))
                   .arg(setID);
-  SQLite::Statement q(*db, qry.toStdString());
+  SQLite::Statement q(*db, (const char*) qry.toLocal8Bit());
 
   q.bind(":setID", static_cast<const char*>(setID.toAscii()));
   if (data.contains(RE_ACSEL_BUNDLE_SET_NAME)) {
@@ -936,7 +936,7 @@ bool ReAcsel::findShader( const QString& shaderID, QVariantMap& data ) {
                   .arg(RE_ACSEL_TABLE_SETS)
                   .arg(shaderID);
 
-  SQLite::Statement q(*db, query.toStdString());
+  SQLite::Statement q(*db, (const char*) query.toLocal8Bit());
   if (q.executeStep()) {
     data["ShaderID"]     = shaderID;
     data[RE_ACSEL_BUNDLE_SET_ID]        = QString(q.getColumn(1));
@@ -964,9 +964,9 @@ bool ReAcsel::findShader( const QString& shaderSetID,
                   )
                   .arg(RE_ACSEL_TABLE_SHADERS);
 
-  SQLite::Statement q(*db, query.toStdString());
-  q.bind(":setID", shaderSetID.toStdString());
-  q.bind(":matName", materialName.toStdString());
+  SQLite::Statement q(*db, (const char*) query.toLocal8Bit());
+  q.bind(":setID", (const char*) shaderSetID.toLocal8Bit());
+  q.bind(":matName", (const char*) materialName.toLocal8Bit());
   if (q.executeStep()) {
     shaderCode = QString(q.getColumn(0));
     matType = getMaterialType(q.getColumn(1).getText());
@@ -1000,12 +1000,12 @@ bool ReAcsel::findShaderSet( const QString& setID,
           )
           .arg(RE_ACSEL_TABLE_SETS);
   } 
-  SQLite::Statement q(*db, qry.toStdString());
+  SQLite::Statement q(*db, (const char*) qry.toLocal8Bit());
   if (!useName) {
-    q.bind(":setID", setID.toStdString());
+    q.bind(":setID", (const char*) setID.toLocal8Bit());
   }
   else {
-    q.bind(":setName", setID.toLower().toStdString());
+    q.bind(":setName", (const char*) setID.toLower().toLocal8Bit());
   }
 
   if (q.executeStep()) {
@@ -1045,7 +1045,7 @@ bool ReAcsel::findDefaultShaderSet( const QString& objectID, QVariantMap& data )
                 )
                 .arg(RE_ACSEL_TABLE_SETS)
                 .arg(objectID.toLower());
-  SQLite::Statement q(*db, qry.toStdString());
+  SQLite::Statement q(*db, (const char*) qry.toLocal8Bit());
 
   if (q.executeStep()) {
     data[RE_ACSEL_BUNDLE_SET_ID]        = QString(q.getColumn(0));
@@ -1122,7 +1122,7 @@ bool ReAcsel::deleteShaderSet( const QString& setID ) {
     // Delete the shader set information from the Sets table
     QString qry = QString("DELETE FROM %1 WHERE SetID=:setID")
                   .arg(RE_ACSEL_TABLE_SETS);
-    SQLite::Statement q(*db, qry.toStdString());
+    SQLite::Statement q(*db, (const char*) qry.toLocal8Bit());
     q.bind(":setID", static_cast<const char*>(setID.toAscii()));
     if (!q.exec()) {
       return false;
@@ -1130,7 +1130,7 @@ bool ReAcsel::deleteShaderSet( const QString& setID ) {
     // Collect all the UUIDs associated with the shader set
     qry = QString("SELECT UUID FROM %1 where SetID=:setID")
           .arg(RE_ACSEL_TABLE_SHADERS);
-    SQLite::Statement q2(*db, qry.toStdString());
+    SQLite::Statement q2(*db, (const char*) qry.toLocal8Bit());
     q2.bind(":setID", static_cast<const char*>(setID.toAscii()));
 
     QStringList uuids;
@@ -1140,23 +1140,23 @@ bool ReAcsel::deleteShaderSet( const QString& setID ) {
     // Delete all the shaders in the set
     qry = QString("DELETE FROM %1 where SetID=:setID")
           .arg(RE_ACSEL_TABLE_SHADERS);
-    SQLite::Statement q3(*db, qry.toStdString());
+    SQLite::Statement q3(*db, (const char*) qry.toLocal8Bit());
     q3.bind(":setID", static_cast<const char*>(setID.toAscii()));
     q3.exec();
 
     // Delete the connected volumes
     qry = QString("DELETE FROM %1 WHERE SetID=:setID")
             .arg(RE_ACSEL_TABLE_VOLUMES);
-    SQLite::Statement vs(*db, qry.toStdString());
-    vs.bind(":setID", setID.toStdString());
+    SQLite::Statement vs(*db, (const char*) qry.toLocal8Bit());
+    vs.bind(":setID", (const char*) setID.toLocal8Bit());
     vs.exec();
     
     // Remove all the UUIDs in the set
     qry = QString("DELETE FROM %1 where UUID =:uuid")
           .arg(RE_ACSEL_TABLE_UUIDS);
-    SQLite::Statement q4(*db, qry.toStdString());
+    SQLite::Statement q4(*db, (const char*) qry.toLocal8Bit());
     for (int i = 0; i < uuids.count(); i++) {
-      q4.bind(":uuid", uuids[i].toStdString());
+      q4.bind(":uuid", (const char*) uuids[i].toLocal8Bit());
       q4.exec();
       q4.reset();
     }
@@ -1176,8 +1176,8 @@ bool ReAcsel::deleteUniversalShader( const QString& shaderID ) {
 
   QString qry = QString("DELETE FROM %1 WHERE ID=:id")
                   .arg(RE_ACSEL_TABLE_UNI_SHADERS);
-  SQLite::Statement s( *db, qry.toStdString() );
-  s.bind(":id", shaderID.toStdString());
+  SQLite::Statement s( *db, qry.toLocal8Bit() );
+  s.bind(":id", (const char*) shaderID.toLocal8Bit());
   return s.exec();
 }
 
@@ -1190,7 +1190,7 @@ void ReAcsel::getShaderSetList( QList<QStringList>& records ) {
                   "ObjectID,IsEnabled,Author from %1 ORDER BY SetName"
                 )
                 .arg(RE_ACSEL_TABLE_SETS);
-  SQLite::Statement q(*db, qry.toStdString());
+  SQLite::Statement q(*db, qry.toLocal8Bit());
 
   while (q.executeStep()) {
     QStringList* r = new QStringList();
@@ -1228,7 +1228,7 @@ void ReAcsel::getShaderSetShaderInfo( const QString& shaderSetID,
                 )
                 .arg(RE_ACSEL_TABLE_SHADERS);
 
-  SQLite::Statement q(*db, qry.toStdString());
+  SQLite::Statement q(*db, qry.toLocal8Bit());
   q.bind(":setID", static_cast<const char*>(shaderSetID.toAscii()));
   while( q.executeStep() ) {
     QStringList* rec = new QStringList();
@@ -1258,7 +1258,7 @@ QVariantMap ReAcsel::exportShaderSet( const QString& shaderSetID ) {
                 .arg(RE_ACSEL_TABLE_SETS);
 
   try {
-    SQLite::Statement q(*db, qry.toStdString());
+    SQLite::Statement q(*db, qry.toLocal8Bit());
     q.bind(":setID", static_cast<const char*>(shaderSetID.toAscii()));
 
     if (q.executeStep()) {
@@ -1288,7 +1288,7 @@ QVariantMap ReAcsel::exportShaderSet( const QString& shaderSetID ) {
         .arg(RE_ACSEL_TABLE_SHADERS)
         .arg(RE_ACSEL_TABLE_UUIDS);
 
-  SQLite::Statement q2(*db, qry.toStdString());
+  SQLite::Statement q2(*db, qry.toLocal8Bit());
   q2.bind(":setID", static_cast<const char*>(shaderSetID.toAscii()));
 
   while( q2.executeStep() ) {
@@ -1312,7 +1312,7 @@ QVariantMap ReAcsel::exportShaderSet( const QString& shaderSetID ) {
   qry = QString("SELECT VolumeID, VolumeCode from %1 WHERE SetID=:setID")
           .arg(RE_ACSEL_TABLE_VOLUMES);
 
-  SQLite::Statement q3(*db, qry.toStdString());
+  SQLite::Statement q3(*db, qry.toLocal8Bit());
   q3.bind(":setID", static_cast<const char*>(shaderSetID.toAscii()));
   while( q3.executeStep() ) {
     volumes[q3.getColumn(0).getText()] = q3.getColumn(1).getText();
@@ -1346,8 +1346,8 @@ QVariantMap ReAcsel::exportUniversalShader( const QString& shaderID ) {
                   .arg(RE_ACSEL_TABLE_UNI_SHADERS);
 
   try {
-    SQLite::Statement q(*db, qry.toStdString());
-    q.bind(":ID", shaderID.toStdString());
+    SQLite::Statement q(*db, qry.toLocal8Bit());
+    q.bind(":ID", (const char*) shaderID.toLocal8Bit());
 
     if (q.executeStep()) {
       desc[RE_ACSEL_BUNDLE_TYPE]          = RE_ACSEL_UNIVERSAL_SHADER_SIGNATURE;
@@ -1386,7 +1386,7 @@ bool ReAcsel::storeOriginalShader( const QString& objID,
                   "INSERT OR REPLACE INTO %1 (App, ObjectID, MatID, ShaderCode)"
                   " values(?,?,?,?)"
                 ).arg(RE_ACSEL_TABLE_ORIGINAL_SHADERS);
-    SQLite::Statement s( *db, q.toStdString() );
+    SQLite::Statement s( *db, q.toLocal8Bit() );
     s.bind(1, (const char*)getAppCode().toAscii());
     s.bind(2, (const char*)objID.toUtf8());
     s.bind(3, (const char*)matID.toUtf8());
@@ -1408,14 +1408,14 @@ QString ReAcsel::exportDbToBundle( const QString& bundleFileName ) {
 
   // Make sure to export only non commercial shader sets
   QString qry = QString("SELECT SetID from %1 WHERE Flags == 0").arg(RE_ACSEL_TABLE_SETS);
-  SQLite::Statement s(*db, qry.toStdString());
+  SQLite::Statement s(*db, qry.toLocal8Bit());
   QStringList sets;
   while (s.executeStep()) {
     sets << s.getColumn(0).getText();
   }
 
   qry = QString("SELECT ID from %1").arg(RE_ACSEL_TABLE_UNI_SHADERS);
-  SQLite::Statement su(*db, qry.toStdString());
+  SQLite::Statement su(*db, qry.toLocal8Bit());
   QStringList universalShaders;
   while (su.executeStep()) {
     universalShaders << su.getColumn(0).getText();
@@ -1558,11 +1558,11 @@ ReAcsel::ReturnCode ReAcsel::importShaderSet( QVariantMap& shaderData ) {
     {
       setFound = true;
       if (tmpVals[RE_ACSEL_BUNDLE_AUTHOR].toString().toLower() != author) {
-        RE_LOG_INFO() << QString("Import bundle. Bundle author: %1, "
+        RE_LOG_INFO() << (const char*) QString("Import bundle. Bundle author: %1, "
                                  "originally: %2")
                            .arg(tmpVals[RE_ACSEL_BUNDLE_AUTHOR].toString().toLower())
                            .arg(author)
-                           .toStdString();
+                           .toLocal8Bit();
         return UnAuthorizedUpdate;
       }
     }  
@@ -1581,7 +1581,7 @@ ReAcsel::ReturnCode ReAcsel::importShaderSet( QVariantMap& shaderData ) {
   // shaders from the old version mixed with the new ones.
   // RE_LOG_INFO() << "Previous shader set found";
   if (setFound) {
-    // RE_LOG_INFO() << "Delete set " << setID.toStdString();
+    // RE_LOG_INFO() << "Delete set " << setID.toLocal8Bit();
     deleteShaderSet(setID);
   }
   // Save the set
@@ -1705,7 +1705,7 @@ ReAcsel::ReturnCode ReAcsel::importBundle( const QString bundleFileName,
 
 void ReAcsel::importObjectAliases( const QVariantMap& aliases ) {
   QString qry = QString("INSERT OR REPLACE INTO %1 (ObjectID, Alias) VALUES(:objID,:alias)").arg(RE_ACSEL_TABLE_ALIASES);
-  SQLite::Statement s( *db, qry.toStdString() );
+  SQLite::Statement s( *db, qry.toLocal8Bit() );
 
   QMapIterator<QString, QVariant> i(aliases);
   try {
@@ -1766,7 +1766,7 @@ bool ReAcsel::isFigure( const QString figName ) {
       *db, 
       QString("SELECT FigureName from %1 WHERE FigureName='%2'")
         .arg(RE_ACSEL_TABLE_FIGURES)
-        .arg(figName).toStdString()
+        .arg(figName).toLocal8Bit()
     );
     return q.executeStep();
   }
@@ -1782,7 +1782,7 @@ bool ReAcsel::getFigures( QVariantMap& figures ) {
   }
   QString q = QString("SELECT * from %1").arg(RE_ACSEL_TABLE_FIGURES);
   try {
-    SQLite::Statement s( *db, q.toStdString());
+    SQLite::Statement s( *db, q.toLocal8Bit());
     while( s.executeStep() ) {
       figures[s.getColumn(0).getText()] = s.getColumn(1).getText();
     }
@@ -1811,7 +1811,7 @@ bool ReAcsel::saveUniversalShader( QString& shaderID,
                           "SELECT CategoryID from %1 WHERE Name='%2'"
                         )
                         .arg(RE_ACSEL_TABLE_CATEGORIES)
-                        .arg(category).toStdString());
+                        .arg(category).toLocal8Bit());
     if (q.executeStep()) {
       int cat = q.getColumn(0).getInt();
       return saveUniversalShader(
@@ -1868,8 +1868,8 @@ bool ReAcsel::saveUniversalShader( QString& shaderID,
       // This test covers the case when we import from a bundle
       QString qry = QString("SELECT ID from %1 WHERE ID=:id")
                       .arg(RE_ACSEL_TABLE_UNI_SHADERS);
-      SQLite::Statement s( *db, qry.toStdString());
-      s.bind(":id", shaderID.toStdString());
+      SQLite::Statement s( *db, qry.toLocal8Bit());
+      s.bind(":id", (const char*) shaderID.toLocal8Bit());
       isNew = !s.executeStep();
     }
     // Save the shader
@@ -1900,7 +1900,7 @@ bool ReAcsel::saveUniversalShader( QString& shaderID,
                .arg(RE_ACSEL_TABLE_UNI_SHADERS);
       }
     }
-    SQLite::Statement q( *db, qry.toStdString() );
+    SQLite::Statement q( *db, qry.toLocal8Bit() );
     q.bind(":id", static_cast<const char*>(shaderID.toAscii()));
     q.bind(":name", static_cast<const char*>(shaderName.toUtf8()));
     q.bind(":description", static_cast<const char*>(desc.toUtf8()));
@@ -1914,7 +1914,7 @@ bool ReAcsel::saveUniversalShader( QString& shaderID,
     if (!result) {
       lastErrorMsg = db->getErrorMsg();
       RE_LOG_WARN() << "Error while saving a universal shader: " 
-                    << lastErrorMsg.toStdString();
+                    << (const char*) lastErrorMsg.toLocal8Bit();
     }
     return result;
   }
@@ -1941,7 +1941,7 @@ bool ReAcsel::findUniversalShader( const QString& shaderID,
                     .arg(RE_ACSEL_TABLE_UNI_SHADERS)
                     .arg(RE_ACSEL_TABLE_CATEGORIES);
 
-  SQLite::Statement q(*db, query.toStdString());
+  SQLite::Statement q(*db, query.toLocal8Bit());
   q.bind(":id", static_cast<const char*>(shaderID.toAscii()));
   if (q.executeStep()) {
     data[RE_ACSEL_BUNDLE_NAME]         = QString(q.getColumn(0));
@@ -1973,7 +1973,7 @@ void ReAcsel::getUniversalShaderList( QList<QStringList>& records,
             .arg(RE_ACSEL_TABLE_CATEGORIES)
             .arg(category);
   }
-  SQLite::Statement q(*db, qry.toStdString());
+  SQLite::Statement q(*db, qry.toLocal8Bit());
 
   while (q.executeStep()) {
     QStringList* r = new QStringList();
@@ -1996,7 +1996,7 @@ void ReAcsel::getCategoryList( QStringList& list ) {
 
   QString qry = QString("SELECT Name from %1 order by Name")
                   .arg(RE_ACSEL_TABLE_CATEGORIES);
-  SQLite::Statement q(*db, qry.toStdString());
+  SQLite::Statement q(*db, qry.toLocal8Bit());
   while( q.executeStep() ) {
     list << static_cast<const char*>(q.getColumn(0));
   }
@@ -2014,7 +2014,7 @@ void ReAcsel::getUniversalShaderPreview( const QString& shaderID,
     QString qry = QString("SELECT Thumbnail from %1 WHERE ID='%2'")
                     .arg(RE_ACSEL_TABLE_UNI_SHADERS)
                     .arg(shaderID);
-    SQLite::Statement s( *db, qry.toStdString());
+    SQLite::Statement s( *db, qry.toLocal8Bit());
     if (s.executeStep()) {
       blobSize = s.getColumn(0).size();
       if (blobSize > 0) {
